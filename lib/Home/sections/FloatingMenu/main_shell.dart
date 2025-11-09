@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:taskcsc/Home/Widgets/PopularSection/popularCoursesPage.dart';
 import 'package:taskcsc/Home/pages/HomePage.dart';
-import 'package:taskcsc/Home/pages/MyCorses.dart';
+import 'package:taskcsc/Home/pages/MYCOURSme.dart';
 import 'package:taskcsc/Home/pages/ProfilePage.dart';
 import 'package:taskcsc/Home/pages/Setting/SettingPage.dart';
 import 'package:taskcsc/Home/sections/FloatingMenu/FloatingMenuButton.dart';
@@ -18,7 +18,7 @@ class MainShell extends StatelessWidget {
     /// ترتيب الصفحات حسب الأيقونات في FloatingMenuButton
     final List<Widget> pages = const [
       HomePage(), // 0️⃣ أيقونة Home
-      MyCoursesPage(), // 1️⃣ أيقونة المربعات
+      MyCoursesMe(), // 1️⃣ أيقونة المربعات
       PopularSeeAllPage(), // 2️⃣ أيقونة الحفظ
       ProfilePage(), // 3️⃣ أيقونة الشخص
       SettingsPage(), // 4️⃣ أيقونة الإعدادات

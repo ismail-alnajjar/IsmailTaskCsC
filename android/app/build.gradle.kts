@@ -10,20 +10,23 @@ android {
     namespace = "com.example.taskcsc"
     compileSdk = 36
 
-    defaultConfig {
-        applicationId = "com.example.taskcsc"
-        minSdk = flutter.minSdkVersion // ✅ ضروري لـ Firebase
-        targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
-        multiDexEnabled = true
-    }
+   defaultConfig {
+    applicationId = "com.example.taskcsc"
+    minSdk = flutter.minSdkVersion
+    targetSdk = 36
+
+    // ⬇️ عدّل فقط هدول السطرين
+    versionCode = 2       // زيد الرقم (كان 1)
+    versionName = "1.1"   // رقم الإصدار الظاهر للمستخدم
+
+    multiDexEnabled = true
+}
+
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-
-        // ✅ كوتلن DSL تحتاج = true بدل من مجرد true
+        // ✅ Kotlin DSL تحتاج صيغة كاملة:
         isCoreLibraryDesugaringEnabled = true
     }
 
@@ -32,15 +35,25 @@ android {
     }
 
     buildTypes {
+        // 🔹 Debug بدون ضغط (عشان التطوير أسرع)
         getByName("debug") {
             isMinifyEnabled = false
             isShrinkResources = false
             signingConfig = signingConfigs.getByName("debug")
         }
 
+        // 🔹 Release مضغوط ومهيأ للنشر
         getByName("release") {
-            isMinifyEnabled = false
-            isShrinkResources = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+
+            // ✅ ملف proguard لتقليل الحجم بأمان
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+
+            // حالياً يستخدم توقيع debug، ممكن تغيّره لاحقًا بتوقيعك الخاص
             signingConfig = signingConfigs.getByName("debug")
         }
     }
@@ -51,10 +64,10 @@ flutter {
 }
 
 dependencies {
-    // ✅ إدارة Firebase عبر BOM
+    // ✅ إدارة Firebase عبر BOM (إصدار موحّد)
     implementation(platform("com.google.firebase:firebase-bom:33.3.0"))
 
-    // 🔥 المكتبات الأساسية
+    // 🔥 مكتبات Firebase الأساسية
     implementation("com.google.firebase:firebase-analytics-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-messaging-ktx")

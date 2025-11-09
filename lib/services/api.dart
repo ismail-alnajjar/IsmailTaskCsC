@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 
 class Api {
   /// 🔹 رابط السيرفر الأساسي (.NET backend)
-  final String baseUrl = "http://10.180.177.192:7295/api/";
+  final String baseUrl = "https://suhaib0000-001-site1.jtempurl.com/api/";
 
   Future<dynamic> get({required String endpoint, String? token}) async {
     final url = "$baseUrl$endpoint";

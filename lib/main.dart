@@ -1,3 +1,5 @@
+import 'dart:io'; // ✅ مهم لحل مشكلة SSL
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 // 🟢 الصفحات
@@ -9,7 +11,6 @@ import 'package:taskcsc/Home/pages/DiscPay.dart';
 import 'package:taskcsc/Home/pages/EnterMyCourse.dart';
 import 'package:taskcsc/Home/pages/HomePage.dart';
 import 'package:taskcsc/Home/pages/MYCOURSme.dart';
-import 'package:taskcsc/Home/pages/MyCorses.dart';
 import 'package:taskcsc/Home/pages/NotificationsPage.dart';
 import 'package:taskcsc/Home/pages/ProfilePage.dart';
 import 'package:taskcsc/Home/pages/Setting/SettingPage.dart';
@@ -28,13 +29,26 @@ import 'package:taskcsc/provider/login_provider.dart';
 import 'package:taskcsc/provider/menu_provider.dart';
 import 'package:taskcsc/provider/notification_provider.dart';
 
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // ✅ يسمح بالاتصال مع HTTPS حتى لو الشهادة غير موثوقة
+  HttpOverrides.global = MyHttpOverrides();
 
   // ✅ تهيئة Firebase و FCM
   await AppInitializer.init();
 
   runApp(const SystemPage());
+}
+
+// ✅ كلاس لتجاهل التحقق من SSL (ضروري لـ jtempurl)
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+  }
 }
 
 class SystemPage extends StatelessWidget {
@@ -66,7 +80,6 @@ class SystemPage extends StatelessWidget {
           '/MainShell': (context) => const MainShell(),
           '/profile': (context) => const ProfilePage(),
           '/Settings': (context) => const SettingsPage(),
-          '/MyCourses': (context) => const MyCoursesPage(),
           '/CoursesPage': (context) => const CoursesPage(),
           '/CoursePlayingPage': (context) => const CoursePlayingPage(),
           '/MyCoursesMe': (context) => const MyCoursesMe(),

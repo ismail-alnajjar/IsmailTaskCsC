@@ -45,17 +45,26 @@ class CourseDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 🔹 صورة الكورس
+            // 🔹 صورة الكورس (محسّنة)
             ClipRRect(
               borderRadius: BorderRadius.circular(20),
               child: (coverImage.isNotEmpty)
                   ? Image.network(
                       coverImage.startsWith('http')
                           ? coverImage
-                          : "http://10.0.2.2:7295/$coverImage",
+                          : "https://suhaib0000-001-site1.jtempurl.com/$coverImage",
                       width: double.infinity,
                       height: size.height * 0.25,
                       fit: BoxFit.cover,
+                      // 🔸 في حال فشل تحميل الصورة
+                      errorBuilder: (context, error, stackTrace) {
+                        return Image.asset(
+                          "assets/MyCorses.png", // صورة افتراضية
+                          width: double.infinity,
+                          height: size.height * 0.25,
+                          fit: BoxFit.cover,
+                        );
+                      },
                     )
                   : Image.asset(
                       "assets/MyCorses.png",
@@ -64,6 +73,7 @@ class CourseDetailPage extends StatelessWidget {
                       fit: BoxFit.cover,
                     ),
             ),
+
             const SizedBox(height: 16),
 
             // 🔹 الاسم والسعر
@@ -130,6 +140,7 @@ class CourseDetailPage extends StatelessWidget {
                 height: 1.5,
               ),
             ),
+
             const SizedBox(height: 30),
 
             // 🔹 الزر المعدل بتدرّج لوني

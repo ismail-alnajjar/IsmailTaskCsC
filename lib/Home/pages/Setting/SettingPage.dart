@@ -23,7 +23,8 @@ class SettingsPage extends StatelessWidget {
           ),
           onPressed: () {
             // ✅ يرجع للـ MainScreen والهوم
-            Navigator.pushReplacementNamed(context, '/MainShell');
+            Navigator.pushReplacementNamed(context, '/Home');
+
             menu.selectIndex(0);
           },
         ),

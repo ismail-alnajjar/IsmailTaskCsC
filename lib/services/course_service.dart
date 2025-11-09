@@ -6,7 +6,8 @@ import 'package:taskcsc/model/course_model.dart';
 /// 🔹 خدمة إدارة الكورسات (عرض، إضافة، تعديل، حذف، بحث)
 class CourseService {
   // ✅ غيّر الـ IP حسب شبكتك المحلية
-  static const String baseUrl = "http://10.180.177.192:7295/api/";
+  static const String baseUrl =
+      "https://suhaib0000-001-site1.jtempurl.com/api/";
 
   /// 🟢 جلب جميع الكورسات
   static Future<List<Course>> fetchCourses() async {

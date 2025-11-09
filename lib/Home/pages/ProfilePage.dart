@@ -111,7 +111,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           onPressed: () {
             // ✅ يرجع إلى صفحة MainShell
-            Navigator.pushReplacementNamed(context, '/Home');
+            Navigator.pushReplacementNamed(context, '/MainShell');
           },
         ),
         title: const Text(
