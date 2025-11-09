@@ -117,7 +117,7 @@ class _PopularCoursesSectionState extends State<PopularCoursesSection> {
             ),
             GestureDetector(
               onTap: () {
-                Navigator.pushNamed(context, '/PopularSeeAll');
+                Navigator.pushNamed(context, '/CoursesPage');
               },
               child: const Text(
                 'See All',
