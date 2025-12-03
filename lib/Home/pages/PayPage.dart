@@ -2,13 +2,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:taskcsc/model/course_model.dart';
-import 'package:taskcsc/services/course_sync_service.dart'; // 🆕 لجلب البيانات من API وحفظها
+import 'package:taskcsc/services/course_sync_service.dart';
 
 class PayPage extends StatefulWidget {
-  final String buttonTitle;
-  final Course course;
+  final String? buttonTitle;
+  final Course? course;
 
-  const PayPage({super.key, required this.buttonTitle, required this.course});
+  const PayPage({super.key, this.buttonTitle, this.course});
 
   @override
   State<PayPage> createState() => _PayPageState();
@@ -23,8 +23,10 @@ class _PayPageState extends State<PayPage> {
 
   bool _isLoading = false;
 
-  /// ✅ حفظ الكورس في Firebase داخل مجموعة المستخدم
+  /// ✅ إضافة الكورس لمجموعة المستخدم (إن وجد)
   Future<void> _addCourseToMyCourses() async {
+    if (widget.course == null) return;
+
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
@@ -41,22 +43,21 @@ class _PayPageState extends State<PayPage> {
           .doc(user.uid)
           .collection('myCourses')
           .doc(
-            widget.course.id?.toString() ??
+            widget.course?.id?.toString() ??
                 DateTime.now().millisecondsSinceEpoch.toString(),
           );
 
       await docRef.set({
-        'courseId': widget.course.id,
-        'title': widget.course.title,
-        'teacherName': widget.course.teacherName ?? 'Unknown',
-        'price': widget.course.price ?? 0,
-        'description': widget.course.description ?? '',
-        'coverImage': widget.course.coverImage ?? '',
+        'courseId': widget.course?.id,
+        'title': widget.course?.title ?? '',
+        'teacherName': widget.course?.teacherName ?? 'Unknown',
+        'price': widget.course?.price ?? 0,
+        'description': widget.course?.description ?? '',
+        'coverImage': widget.course?.coverImage ?? '',
         'purchasedAt': FieldValue.serverTimestamp(),
       });
 
-      // ✅ نحفظ الكورسات العامة أيضًا إذا مش موجودة
-      await CourseSyncService.saveCoursesToFirebase([widget.course]);
+      await CourseSyncService.saveCoursesToFirebase([widget.course!]);
 
       setState(() => _isLoading = false);
 
@@ -69,7 +70,7 @@ class _PayPageState extends State<PayPage> {
     }
   }
 
-  /// 🟢 نافذة نجاح الشراء
+  /// 🟢 نافذة نجاح الدفع
   void _showSuccessDialog() {
     showDialog(
       context: context,
@@ -114,8 +115,8 @@ class _PayPageState extends State<PayPage> {
                   ),
                 ),
                 onPressed: () {
-                  Navigator.pop(context); // تغلق الـ Dialog
-                  Navigator.pop(context); // ترجع للخلف
+                  Navigator.pop(context);
+                  Navigator.pop(context);
                 },
                 child: const Text(
                   "OK",
@@ -129,7 +130,7 @@ class _PayPageState extends State<PayPage> {
     );
   }
 
-  /// 🟣 دالة تنفيذ الدفع الوهمي
+  /// 🟣 تنفيذ الدفع
   Future<void> _handlePayment() async {
     if (_formKey.currentState?.validate() ?? false) {
       await _addCourseToMyCourses();
@@ -194,7 +195,6 @@ class _PayPageState extends State<PayPage> {
                     ),
                     const SizedBox(height: 18),
 
-                    // بطاقات الدفع
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
@@ -264,7 +264,7 @@ class _PayPageState extends State<PayPage> {
                         ),
                         alignment: Alignment.center,
                         child: Text(
-                          widget.buttonTitle,
+                          widget.buttonTitle ?? "Pay Now",
                           style: const TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w600,
@@ -281,7 +281,7 @@ class _PayPageState extends State<PayPage> {
     );
   }
 
-  /// 📥 عنصر إدخال موحد
+  /// 📥 عنصر إدخال
   Widget _inputField(
     String hint,
     IconData icon,

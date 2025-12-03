@@ -5,7 +5,6 @@ import 'package:taskcsc/Home/Widgets/HeaderSection/HeaderSectionHome.dart';
 import 'package:taskcsc/Home/Widgets/PopularSection/PopularCoursesSection.dart';
 import 'package:taskcsc/Home/Widgets/SearchBarHome.dart';
 import 'package:taskcsc/Home/Widgets/TrendingCoursesSection.dart';
-import 'package:taskcsc/Home/sections/FloatingMenu/FloatingMenuButton.dart';
 import 'package:taskcsc/model/course_model.dart';
 import 'package:taskcsc/provider/menu_provider.dart';
 import 'package:taskcsc/services/course_service.dart';
@@ -102,13 +101,7 @@ class _HomePageState extends State<HomePage> {
                   bottom: 0,
                   left: 0,
                   right: 0,
-                  child: SafeArea(
-                    top: false,
-                    child: Center(
-                      heightFactor: 0.4,
-                      child: FloatingMenuButton(),
-                    ),
-                  ),
+                  child: SafeArea(top: false, child: Center(heightFactor: 0.4)),
                 ),
               ],
             ),

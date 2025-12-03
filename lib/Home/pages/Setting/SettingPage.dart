@@ -1,5 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:taskcsc/Home/pages/PayPage.dart';
 import 'package:taskcsc/Home/pages/Setting/SubScriptionPlan%20+/SubscriptionPlans.dart';
 import 'package:taskcsc/provider/menu_provider.dart';
 
@@ -16,18 +19,7 @@ class SettingsPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: const Color(0xFFF9F6F7),
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: Colors.black87,
-          ),
-          onPressed: () {
-            // ✅ يرجع للـ MainScreen والهوم
-            Navigator.pushReplacementNamed(context, '/Home');
 
-            menu.selectIndex(0);
-          },
-        ),
         title: const Text(
           "Settings",
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.w500),
@@ -48,12 +40,16 @@ class SettingsPage extends StatelessWidget {
             _SettingsTile(
               icon: Icons.person_outline_rounded,
               title: "Edit Profile",
-              onTap: () {},
+              onTap: () {
+                Navigator.pushNamed(context, '/editProfile');
+              },
             ),
             _SettingsTile(
               icon: Icons.lock_outline_rounded,
               title: "Change Password",
-              onTap: () {},
+              onTap: () {
+                Navigator.pushNamed(context, '/changePassword');
+              },
             ),
             const SizedBox(height: 25),
 
@@ -75,7 +71,10 @@ class SettingsPage extends StatelessWidget {
               icon: Icons.payment_outlined,
               title: "Payment Method",
               onTap: () {
-                Navigator.pushNamed(context, '/PayPage');
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const PayPage()),
+                );
               },
             ),
 
@@ -92,8 +91,51 @@ class SettingsPage extends StatelessWidget {
               icon: Icons.logout_rounded,
               title: "Logout",
               color: Colors.red,
-              onTap: () {
-                Navigator.pushNamed(context, '/login');
+              onTap: () async {
+                final shouldLogout = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text("Logout"),
+                    content: const Text("Are you sure you want to log out?"),
+                    actions: [
+                      TextButton(
+                        onPressed: () =>
+                            Navigator.pushReplacementNamed(context, '/login'),
+                        child: const Text("Cancel"),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text(
+                          "Logout",
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (shouldLogout == true) {
+                  try {
+                    // 🔹 تسجيل خروج فعلي من Firebase (إن وجد)
+                    // import 'package:firebase_auth/firebase_auth.dart';
+                    await FirebaseAuth.instance.signOut();
+
+                    // 🔹 تنظيف أي بيانات محلية محفوظة (SharedPreferences)
+                    final prefs = await SharedPreferences.getInstance();
+                    await prefs.clear();
+
+                    // 🔹 انتقال آمن لشاشة تسجيل الدخول مع حذف السجل
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      '/login',
+                      (route) => false,
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error logging out: $e')),
+                    );
+                  }
+                }
               },
             ),
           ],

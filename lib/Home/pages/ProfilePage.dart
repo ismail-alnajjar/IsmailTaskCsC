@@ -104,16 +104,7 @@ class _ProfilePageState extends State<ProfilePage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFFF9F6F7),
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: Colors.black87,
-          ),
-          onPressed: () {
-            // ✅ يرجع إلى صفحة MainShell
-            Navigator.pushReplacementNamed(context, '/MainShell');
-          },
-        ),
+
         title: const Text(
           "Profile",
           style: TextStyle(

@@ -16,13 +16,31 @@ class _MyCoursesMeState extends State<MyCoursesMe> {
   bool isLoading = true;
   List<Map<String, dynamic>> myCourses = [];
 
+  /// ⭐ إصلاح رابط الصورة
+  String fixImageUrl(String path) {
+    if (path.isEmpty) return "";
+    if (path.startsWith("http")) return path;
+
+    const port = 7295;
+
+    // ✔ لو Emulator
+    if (path.contains("uploads")) {
+      return "http://10.0.2.2:$port/$path";
+    }
+
+    // ✔ لو تلفون فعلي (عدّل IP مرة واحدة)
+    const String localIp = "192.168.1.10";
+
+    return "http://$localIp:$port/$path";
+  }
+
   @override
   void initState() {
     super.initState();
     fetchMyCourses();
   }
 
-  /// 🟢 جلب الكورسات الخاصة بالمستخدم من Firestore
+  /// 🟢 جلب بيانات الكورسات
   Future<void> fetchMyCourses() async {
     if (user == null) return;
 
@@ -34,34 +52,16 @@ class _MyCoursesMeState extends State<MyCoursesMe> {
           .orderBy('purchasedAt', descending: true)
           .get();
 
-      // 🔹 طباعة البيانات للمراجعة
-      for (var doc in snapshot.docs) {
-        print("📘 Course Data: ${doc.data()}");
-      }
-
       setState(() {
         myCourses = snapshot.docs.map((doc) {
           final data = doc.data();
 
-          // ✅ توحيد اسم المدرّس
-          final teacher =
-              (data['teacherName']?.toString().trim().isNotEmpty ?? false)
-              ? data['teacherName'].toString()
-              : 'Unknown';
-
-          // ✅ ضبط مسار الصورة
-          final image = (data['coverImage']?.toString().isNotEmpty ?? false)
-              ? (data['coverImage'].toString().startsWith('http')
-                    ? data['coverImage']
-                    : "http://10.0.2.2:7295/${data['coverImage']}")
-              : '';
-
           return {
             'title': data['title'] ?? 'Untitled Course',
-            'teacherName': teacher,
+            'teacherName': data['teacherName'] ?? 'Unknown',
             'description': data['description'] ?? '',
             'price': data['price'] ?? 0,
-            'coverImage': image,
+            'coverImage': fixImageUrl(data['coverImage'] ?? ""),
             'lessons': data['lessons'] ?? 48,
             'chapters': data['chapters'] ?? 25,
           };
@@ -93,7 +93,7 @@ class _MyCoursesMeState extends State<MyCoursesMe> {
               size: 18,
             ),
             onPressed: () {
-              Navigator.pushReplacementNamed(context, '/profile');
+              Navigator.pushReplacementNamed(context, '/MainShell');
               menu.selectIndex(0);
             },
           ),
@@ -109,7 +109,6 @@ class _MyCoursesMeState extends State<MyCoursesMe> {
         centerTitle: true,
       ),
 
-      // ✅ المحتوى الرئيسي
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : myCourses.isEmpty
@@ -131,15 +130,7 @@ class _MyCoursesMeState extends State<MyCoursesMe> {
                     Navigator.pushNamed(
                       context,
                       '/EnterMyCourses',
-                      arguments: {
-                        'title': c['title'],
-                        'teacherName': c['teacherName'],
-                        'description': c['description'],
-                        'price': c['price'],
-                        'coverImage': c['coverImage'],
-                        'lessons': c['lessons'],
-                        'chapters': c['chapters'],
-                      },
+                      arguments: c,
                     );
                   },
                   child: Container(
@@ -162,11 +153,11 @@ class _MyCoursesMeState extends State<MyCoursesMe> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // 🔹 Progress bar + الوقت
+                        // Progress Bar
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
+                          children: const [
+                            Text(
                               "Your progress",
                               style: TextStyle(
                                 color: Colors.black54,
@@ -174,7 +165,7 @@ class _MyCoursesMeState extends State<MyCoursesMe> {
                               ),
                             ),
                             Row(
-                              children: const [
+                              children: [
                                 Icon(
                                   Icons.access_time,
                                   size: 15,
@@ -192,7 +183,9 @@ class _MyCoursesMeState extends State<MyCoursesMe> {
                             ),
                           ],
                         ),
+
                         const SizedBox(height: 4),
+
                         const Text(
                           "75% to complete",
                           style: TextStyle(
@@ -201,7 +194,9 @@ class _MyCoursesMeState extends State<MyCoursesMe> {
                             fontWeight: FontWeight.w700,
                           ),
                         ),
+
                         const SizedBox(height: 6),
+
                         ClipRRect(
                           borderRadius: BorderRadius.circular(10),
                           child: LinearProgressIndicator(
@@ -213,20 +208,20 @@ class _MyCoursesMeState extends State<MyCoursesMe> {
                             color: const Color(0xFF087785),
                           ),
                         ),
+
                         const SizedBox(height: 18),
 
-                        // 🔹 بيانات الكورس (العنوان + اسم المدرس + الصورة)
+                        // Row Course Info
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // النصوص
+                            // Text info
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const SizedBox(height: 2),
                                   Text(
-                                    c['title'] ?? "Untitled Course",
+                                    c['title'],
                                     style: const TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w800,
@@ -236,7 +231,7 @@ class _MyCoursesMeState extends State<MyCoursesMe> {
                                   ),
                                   const SizedBox(height: 5),
                                   Text(
-                                    "By: ${c['teacherName'] ?? 'Unknown'}",
+                                    "By: ${c['teacherName']}",
                                     style: const TextStyle(
                                       color: Color(0xFF087785),
                                       fontSize: 15,
@@ -278,26 +273,34 @@ class _MyCoursesMeState extends State<MyCoursesMe> {
                                 ],
                               ),
                             ),
+
                             const SizedBox(width: 10),
 
-                            // الصورة
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(14),
-                              child:
-                                  (c['coverImage'] != null &&
-                                      c['coverImage'].toString().isNotEmpty)
-                                  ? Image.network(
-                                      c['coverImage'],
-                                      width: 120,
-                                      height: 100,
-                                      fit: BoxFit.cover,
-                                    )
-                                  : Image.asset(
-                                      "assets/MyCorses.png",
-                                      width: 120,
-                                      height: 100,
-                                      fit: BoxFit.cover,
-                                    ),
+                            // ⭐ الصورة داخل SizedBox لمنع Overflow
+                            SizedBox(
+                              width: 120,
+                              height: 100,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(14),
+                                child:
+                                    (c['coverImage'] != null &&
+                                        c['coverImage'].toString().isNotEmpty)
+                                    ? Image.network(
+                                        c['coverImage'],
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (context, error, stackTrace) {
+                                              return Image.asset(
+                                                "assets/MyCorses.png",
+                                                fit: BoxFit.cover,
+                                              );
+                                            },
+                                      )
+                                    : Image.asset(
+                                        "assets/MyCorses.png",
+                                        fit: BoxFit.cover,
+                                      ),
+                              ),
                             ),
                           ],
                         ),

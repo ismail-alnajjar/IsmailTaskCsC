@@ -4,7 +4,7 @@ class Course {
   final String? description;
   final String? teacherName;
   final double? price;
-  final String? coverImage;
+  late String? coverImage;
 
   Course({
     this.id,

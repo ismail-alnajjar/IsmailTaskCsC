@@ -17,12 +17,23 @@ class CourseDetailPage extends StatelessWidget {
     required this.coverImage,
   });
 
+  /// ⭐ دالة لإصلاح رابط الصورة (لو كان من API لوكال)
+  String fixImageUrl(String url) {
+    if (url.isEmpty) return "";
+    if (url.startsWith("http")) return url;
+
+    // لو الرابط جاي كـ "uploads/.."
+    return "http://10.0.2.2:7295/$url";
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
       backgroundColor: const Color(0xFFFDF8F6),
+
+      // ----------------- APPBAR -----------------
       appBar: AppBar(
         backgroundColor: const Color(0xFFFDF8F6),
         elevation: 0,
@@ -39,44 +50,34 @@ class CourseDetailPage extends StatelessWidget {
         ),
         centerTitle: true,
       ),
+
+      // ----------------- BODY -----------------
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 🔹 صورة الكورس (محسّنة)
+            // ---------- COURSE IMAGE ----------
             ClipRRect(
               borderRadius: BorderRadius.circular(20),
-              child: (coverImage.isNotEmpty)
-                  ? Image.network(
-                      coverImage.startsWith('http')
-                          ? coverImage
-                          : "https://suhaib0000-001-site1.jtempurl.com/$coverImage",
-                      width: double.infinity,
-                      height: size.height * 0.25,
-                      fit: BoxFit.cover,
-                      // 🔸 في حال فشل تحميل الصورة
-                      errorBuilder: (context, error, stackTrace) {
-                        return Image.asset(
-                          "assets/MyCorses.png", // صورة افتراضية
-                          width: double.infinity,
-                          height: size.height * 0.25,
-                          fit: BoxFit.cover,
-                        );
-                      },
-                    )
-                  : Image.asset(
-                      "assets/MyCorses.png",
-                      width: double.infinity,
-                      height: size.height * 0.25,
-                      fit: BoxFit.cover,
-                    ),
+              child: Image.network(
+                fixImageUrl(coverImage),
+                width: double.infinity,
+                height: size.height * 0.25,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Image.asset(
+                  "assets/MyCorses.png",
+                  width: double.infinity,
+                  height: size.height * 0.25,
+                  fit: BoxFit.cover,
+                ),
+              ),
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
 
-            // 🔹 الاسم والسعر
+            // ---------- TITLE + PRICE ----------
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -87,16 +88,17 @@ class CourseDetailPage extends StatelessWidget {
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
                       color: Colors.black,
+                      height: 1.3,
                     ),
                   ),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
+                    horizontal: 14,
+                    vertical: 7,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF007C83),
+                    color: const Color(0xFF087785),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Text(
@@ -104,6 +106,7 @@ class CourseDetailPage extends StatelessWidget {
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
+                      fontSize: 15,
                     ),
                   ),
                 ),
@@ -111,16 +114,19 @@ class CourseDetailPage extends StatelessWidget {
             ),
 
             const SizedBox(height: 8),
+
             Text(
               "By: $teacherName",
               style: const TextStyle(
                 color: Color(0xFF258A95),
                 fontSize: 15,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 25),
+
+            // ---------- DESCRIPTION ----------
             const Text(
               "Description",
               style: TextStyle(
@@ -129,64 +135,61 @@ class CourseDetailPage extends StatelessWidget {
                 color: Colors.black,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               description.isNotEmpty
                   ? description
                   : "No description available.",
               style: const TextStyle(
+                fontSize: 15,
                 color: Colors.black54,
-                fontSize: 14.5,
                 height: 1.5,
               ),
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 35),
 
-            // 🔹 الزر المعدل بتدرّج لوني
-            Center(
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const CoursePlayingPage(),
-                    ),
-                  );
-                },
-                child: Container(
-                  width: double.infinity,
-                  height: 55,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [
-                        Color(0xFF087785), // أزرق غامق
-                        Color(0xFF0B3A54), // أزرق فاتح
-                      ],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                    ),
-                    borderRadius: BorderRadius.circular(30),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.15),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+            // ---------- BUTTON ----------
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CoursePlayingPage(),
                   ),
-                  alignment: Alignment.center,
-                  child: const Text(
-                    "Start Learning",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
+                );
+              },
+              child: Container(
+                width: double.infinity,
+                height: 55,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF087785), Color(0xFF0B3A54)],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.15),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
                     ),
+                  ],
+                ),
+                alignment: Alignment.center,
+                child: const Text(
+                  "Start Learning",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
             ),
+
+            const SizedBox(height: 20),
           ],
         ),
       ),

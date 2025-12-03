@@ -13,11 +13,14 @@ import 'package:taskcsc/Home/pages/HomePage.dart';
 import 'package:taskcsc/Home/pages/MYCOURSme.dart';
 import 'package:taskcsc/Home/pages/NotificationsPage.dart';
 import 'package:taskcsc/Home/pages/ProfilePage.dart';
+import 'package:taskcsc/Home/pages/Setting/EditProfile.dart';
 import 'package:taskcsc/Home/pages/Setting/SettingPage.dart';
+import 'package:taskcsc/Home/pages/Setting/changePass.dart';
 import 'package:taskcsc/Home/pages/TextScreen/CoursesIntroScreenPage3.dart';
 import 'package:taskcsc/Home/pages/TextScreen/LearningPage5.dart';
 import 'package:taskcsc/Home/pages/TextScreen/SchedulePage4.dart';
 import 'package:taskcsc/Home/pages/TextScreen/splashScreenPage1.dart';
+import 'package:taskcsc/Home/sections/FloatingMenu/FloatingMenuButton.dart';
 import 'package:taskcsc/Home/sections/FloatingMenu/main_shell.dart';
 import 'package:taskcsc/app_initializer.dart';
 // 🟢 Auth
@@ -28,6 +31,7 @@ import 'package:taskcsc/model/course_model.dart';
 import 'package:taskcsc/provider/login_provider.dart';
 import 'package:taskcsc/provider/menu_provider.dart';
 import 'package:taskcsc/provider/notification_provider.dart';
+import 'package:taskcsc/services/course_sync_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,6 +41,7 @@ void main() async {
 
   // ✅ تهيئة Firebase و FCM
   await AppInitializer.init();
+  await CourseSyncService.syncApiToFirebase(); // ⬅️ المهم
 
   runApp(const SystemPage());
 }
@@ -87,7 +92,9 @@ class SystemPage extends StatelessWidget {
           '/Schedule': (context) => const Schedule(),
           '/LearningP': (context) => const LearningPage5(),
           '/NotificationsPage': (context) => const NotificationsPage(),
-
+          '/FloatingMenuButton': (context) => const FloatingMenuButton(),
+          '/editProfile': (_) => const EditProfilePage(),
+          '/changePassword': (_) => const ChangePasswordPage(),
           // 🟢 EnterMyCourses
           '/EnterMyCourses': (context) {
             final args = ModalRoute.of(context)?.settings.arguments;
