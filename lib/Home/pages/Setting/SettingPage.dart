@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taskcsc/Home/pages/Setting/SubScriptionPlan%20+/SubscriptionPlans.dart';
 import 'package:taskcsc/provider/menu_provider.dart';
 
@@ -92,8 +94,51 @@ class SettingsPage extends StatelessWidget {
               icon: Icons.logout_rounded,
               title: "Logout",
               color: Colors.red,
-              onTap: () {
-                Navigator.pushNamed(context, '/login');
+              onTap: () async {
+                final shouldLogout = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text("Logout"),
+                    content: const Text("Are you sure you want to log out?"),
+                    actions: [
+                      TextButton(
+                        onPressed: () =>
+                            Navigator.pushReplacementNamed(context, '/login'),
+                        child: const Text("Cancel"),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text(
+                          "Logout",
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (shouldLogout == true) {
+                  try {
+                    // 🔹 تسجيل خروج فعلي من Firebase (إن وجد)
+                    // import 'package:firebase_auth/firebase_auth.dart';
+                    await FirebaseAuth.instance.signOut();
+
+                    // 🔹 تنظيف أي بيانات محلية محفوظة (SharedPreferences)
+                    final prefs = await SharedPreferences.getInstance();
+                    await prefs.clear();
+
+                    // 🔹 انتقال آمن لشاشة تسجيل الدخول مع حذف السجل
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      '/login',
+                      (route) => false,
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error logging out: $e')),
+                    );
+                  }
+                }
               },
             ),
           ],

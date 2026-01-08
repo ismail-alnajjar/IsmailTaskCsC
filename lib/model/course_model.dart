@@ -33,14 +33,13 @@ class Course {
       teacherRaw = t['name'] ?? t['fullName'] ?? t['teacherName'];
     }
 
-    return Course(
+    final course = Course(
       id: json['id'] ?? json['Id'],
       title: json['title'] ?? json['Title'] ?? '',
       description: json['description'] ?? json['Description'],
       teacherName: teacherRaw?.toString() ?? 'Unknown',
       price: _parsePrice(json['price'] ?? json['Price']),
-      coverImage:
-          json['coverImageUrl'] ??
+      coverImage: json['coverImageUrl'] ??
           json['coverImage'] ??
           json['coverUrl'] ??
           json['CoverImage'] ??
@@ -49,6 +48,42 @@ class Course {
           json['ImageUrl'] ??
           '',
     );
+
+    // 🔹 تصحيح الرابط القديم إذا وجد
+    // 🔹 تصحيح الرابط القديم إذا وجد
+    if (course.coverImage != null) {
+      String finalImage = course.coverImage!;
+      
+      // 1. استبدال الدومين القديم بالجديد
+      if (finalImage.contains("suhaib0000-001-site1.jtempurl.com")) {
+        finalImage = finalImage.replaceAll(
+          "suhaib0000-001-site1.jtempurl.com",
+          "suhaib0000-001-site5.jtempurl.com",
+        );
+      }
+
+      // 2. إذا كان الرابط لا يبدأ بـ http (أي مسار نسبي أو اسم ملف فقط)
+      if (!finalImage.startsWith('http')) {
+        // إذا كان يبدأ بـ /uploads/courses/ أو uploads/courses/
+        if (finalImage.startsWith('/')) {
+            finalImage = "http://suhaib0000-001-site5.jtempurl.com$finalImage";
+        } else {
+            // إذا كان اسم ملف فقط أو مسار نسبي بدون / في البداية
+            finalImage = "http://suhaib0000-001-site5.jtempurl.com/$finalImage";
+        }
+      }
+
+      return Course(
+        id: course.id,
+        title: course.title,
+        description: course.description,
+        teacherName: course.teacherName,
+        price: course.price,
+        coverImage: finalImage,
+      );
+    }
+
+    return course;
   }
 
   Map<String, dynamic> toJson() {

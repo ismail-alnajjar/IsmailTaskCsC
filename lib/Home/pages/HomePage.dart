@@ -55,45 +55,48 @@ class _HomePageState extends State<HomePage> {
                     horizontal: 20,
                     vertical: 10,
                   ),
-                  child: ListView(
-                    physics: const BouncingScrollPhysics(),
-                    children: [
-                      const HeaderSectionHome(),
-                      const SizedBox(height: 30),
-                      const SearchBarHome(),
-                      const SizedBox(height: 20),
-                      const CategoryChipsRow(),
-                      const SizedBox(height: 25),
+                  child: RefreshIndicator(
+                    onRefresh: loadCourses,
+                    child: ListView(
+                      physics: const BouncingScrollPhysics(),
+                      children: [
+                        const HeaderSectionHome(),
+                        const SizedBox(height: 30),
+                        const SearchBarHome(),
+                        const SizedBox(height: 20),
+                        const CategoryChipsRow(),
+                        const SizedBox(height: 25),
 
-                      // ✅ هنا تعديل الـ TrendingCoursesSection
-                      isLoading
-                          ? const Center(child: CircularProgressIndicator())
-                          : TrendingCoursesSection(
-                              courses: courses
-                                  .map(
-                                    (c) => {
-                                      "title": c.title,
-                                      // ✅ عرض اسم المدرّس الصحيح
-                                      "author": c.teacherName ?? "Unknown",
-                                      "price": c.price?.toString() ?? "Free",
-                                      "coverImage": c.coverImage,
-                                      "description": c.description,
-                                    },
-                                  )
-                                  .toList(),
+                        // ✅ هنا تعديل الـ TrendingCoursesSection
+                        isLoading
+                            ? const Center(child: CircularProgressIndicator())
+                            : TrendingCoursesSection(
+                                courses: courses
+                                    .map(
+                                      (c) => {
+                                        "title": c.title,
+                                        // ✅ عرض اسم المدرّس الصحيح
+                                        "author": c.teacherName ?? "Unknown",
+                                        "price": c.price?.toString() ?? "Free",
+                                        "coverImage": c.coverImage,
+                                        "description": c.description,
+                                      },
+                                    )
+                                    .toList(),
 
-                              // ✅ التنقل لصفحة التفاصيل DiscPay
-                              onCourseTap: (course) {
-                                Navigator.pushNamed(
-                                  context,
-                                  '/DiscPay',
-                                  arguments: course,
-                                );
-                              },
-                            ),
+                                // ✅ التنقل لصفحة التفاصيل DiscPay
+                                onCourseTap: (course) {
+                                  Navigator.pushNamed(
+                                    context,
+                                    '/DiscPay',
+                                    arguments: course,
+                                  );
+                                },
+                              ),
 
-                      const PopularCoursesSection(),
-                    ],
+                        const PopularCoursesSection(),
+                      ],
+                    ),
                   ),
                 ),
 

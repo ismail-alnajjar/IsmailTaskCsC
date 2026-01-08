@@ -164,10 +164,19 @@ class _PopularSeeAllPageState extends State<PopularSeeAllPage> {
                                               c.coverImage != null &&
                                                   c.coverImage!.isNotEmpty
                                               ? Image.network(
-                                                  c.coverImage!,
+                                                  c.coverImage!.startsWith('http')
+                                                      ? c.coverImage!
+                                                      : "http://suhaib0000-001-site5.jtempurl.com/${c.coverImage!}",
                                                   width: double.infinity,
                                                   height: double.infinity,
                                                   fit: BoxFit.cover,
+                                                  errorBuilder: (context, error, stackTrace) =>
+                                                      Image.asset(
+                                                        "assets/MyCorses.png",
+                                                        width: double.infinity,
+                                                        height: double.infinity,
+                                                        fit: BoxFit.cover,
+                                                      ),
                                                 )
                                               : Image.asset(
                                                   "assets/MyCorses.png",

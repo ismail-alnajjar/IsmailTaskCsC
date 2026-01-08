@@ -189,11 +189,27 @@ class DiscPay extends StatelessWidget {
   /// 🧩 دالة بناء صورة الغلاف
   Widget _buildCoverImage() {
     if (course.coverImage != null && course.coverImage!.isNotEmpty) {
-      final url = course.coverImage!.startsWith('http')
-          ? course.coverImage!
-          : "http://10.0.2.2:7295/${course.coverImage!}";
+      String finalImage = course.coverImage!;
+      
+      // 1. استبدال الدومين القديم
+      if (finalImage.contains("suhaib0000-001-site1.jtempurl.com")) {
+        finalImage = finalImage.replaceAll(
+          "suhaib0000-001-site1.jtempurl.com",
+          "suhaib0000-001-site5.jtempurl.com",
+        );
+      }
+
+      // 2. معالجة المسارات النسبية
+      if (!finalImage.startsWith('http')) {
+        if (finalImage.startsWith('/')) {
+          finalImage = "http://suhaib0000-001-site5.jtempurl.com$finalImage";
+        } else {
+          finalImage = "http://suhaib0000-001-site5.jtempurl.com/$finalImage";
+        }
+      }
+
       return Image.network(
-        url,
+        finalImage,
         width: double.infinity,
         height: 230,
         fit: BoxFit.cover,

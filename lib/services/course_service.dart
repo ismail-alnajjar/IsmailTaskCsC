@@ -7,7 +7,7 @@ import 'package:taskcsc/model/course_model.dart';
 class CourseService {
   // ✅ غيّر الـ IP حسب شبكتك المحلية
   static const String baseUrl =
-      "https://suhaib0000-001-site1.jtempurl.com/api/";
+      "http://suhaib0000-001-site5.jtempurl.com/";
 
   /// 🟢 جلب جميع الكورسات
   static Future<List<Course>> fetchCourses() async {
@@ -123,6 +123,39 @@ class CourseService {
       }
     } catch (e) {
       throw Exception('⚠️ Error deleting course: $e');
+    }
+  }
+  /// 🌟 جلب الكورسات الشائعة (Popular)
+  static Future<List<Course>> fetchPopularCourses() async {
+    final url = "${baseUrl}PopularCoursesApi";
+    return _getCourses(url);
+  }
+
+  /// 📂 جلب التصنيفات (Categories)
+  static Future<List<String>> fetchCategories() async {
+    final url = "${baseUrl}CategoriesApi";
+    try {
+      print("🌍 GET Categories: $url");
+      final response = await http
+          .get(Uri.parse(url))
+          .timeout(const Duration(seconds: 15));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        // نفترض أن البيانات تأتي كقائمة سترينغ أو قائمة كائنات
+        if (data is List) {
+          return data.map((e) => e.toString()).toList();
+        } else if (data['categories'] is List) {
+           return (data['categories'] as List).map((e) => e.toString()).toList();
+        }
+        return [];
+      } else {
+        print('❌ Failed to fetch categories: ${response.statusCode}');
+        return [];
+      }
+    } catch (e) {
+      print("⚠️ Error fetching categories: $e");
+      return [];
     }
   }
 }

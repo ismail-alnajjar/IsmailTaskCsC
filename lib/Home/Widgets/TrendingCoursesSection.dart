@@ -69,7 +69,7 @@ class TrendingCoursesSection extends StatelessWidget {
                         child: Image.network(
                           imageUrl.startsWith('http')
                               ? imageUrl
-                              : "http://10.0.2.2:7295/$imageUrl",
+                              : "http://suhaib0000-001-site5.jtempurl.com/$imageUrl",
                           height: 180,
                           width: double.infinity,
                           fit: BoxFit.cover,

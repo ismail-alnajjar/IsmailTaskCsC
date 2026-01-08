@@ -52,23 +52,44 @@ class EnterMyCourses extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 🔹 صورة الكورس
-            ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: (coverImage.isNotEmpty)
-                  ? Image.network(
-                      coverImage.startsWith('http')
-                          ? coverImage
-                          : "http://10.0.2.2:7295/$coverImage",
-                      width: double.infinity,
-                      height: size.height * 0.25,
-                      fit: BoxFit.cover,
-                    )
-                  : Image.asset(
-                      "assets/MyCorses.png",
-                      width: double.infinity,
-                      height: size.height * 0.25,
-                      fit: BoxFit.cover,
-                    ),
+            // 🔹 صورة الكورس
+            Builder(
+              builder: (context) {
+                String finalImage = coverImage;
+                if (finalImage.isNotEmpty) {
+                  if (finalImage.contains("suhaib0000-001-site1.jtempurl.com")) {
+                    finalImage = finalImage.replaceAll(
+                        "suhaib0000-001-site1.jtempurl.com",
+                        "suhaib0000-001-site5.jtempurl.com");
+                  }
+                  if (!finalImage.startsWith('http')) {
+                    if (finalImage.startsWith('/')) {
+                      finalImage =
+                          "http://suhaib0000-001-site5.jtempurl.com$finalImage";
+                    } else {
+                      finalImage =
+                          "http://suhaib0000-001-site5.jtempurl.com/$finalImage";
+                    }
+                  }
+                }
+
+                return ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: (finalImage.isNotEmpty)
+                      ? Image.network(
+                          finalImage,
+                          width: double.infinity,
+                          height: size.height * 0.25,
+                          fit: BoxFit.cover,
+                        )
+                      : Image.asset(
+                          "assets/MyCorses.png",
+                          width: double.infinity,
+                          height: size.height * 0.25,
+                          fit: BoxFit.cover,
+                        ),
+                );
+              },
             ),
             const SizedBox(height: 20),
 

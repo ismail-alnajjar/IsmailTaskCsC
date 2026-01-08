@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:taskcsc/model/course_model.dart';
+import 'package:taskcsc/services/course_service.dart';
 
 class PopularCoursesSection extends StatefulWidget {
   const PopularCoursesSection({super.key});
@@ -21,7 +22,7 @@ class _PopularCoursesSectionState extends State<PopularCoursesSection> {
     _loadCourses();
   }
 
-  /// 🟢 تحميل الكورسات من Firestore (آمن من setState بعد dispose)
+  /// 🟢 تحميل الكورسات الشائعة من API
   Future<void> _loadCourses() async {
     try {
       if (!mounted) return;
@@ -29,17 +30,10 @@ class _PopularCoursesSectionState extends State<PopularCoursesSection> {
         isLoading = true;
       });
 
-      final snapshot = await FirebaseFirestore.instance
-          .collection('courses')
-          .orderBy('createdAt', descending: true)
-          .get();
+      // 🔹 استخدام الـ Service بدل Firestore
+      final data = await CourseService.fetchPopularCourses();
 
-      final data = snapshot.docs.map((e) {
-        final json = e.data();
-        return Course.fromJson(json);
-      }).toList();
-
-      if (!mounted) return; // ✅ تأكد أن الصفحة ما زالت ظاهرة
+      if (!mounted) return;
       setState(() {
         courses = data;
         isLoading = false;
@@ -156,10 +150,19 @@ class _PopularCoursesSectionState extends State<PopularCoursesSection> {
                         child:
                             (c.coverImage != null && c.coverImage!.isNotEmpty)
                             ? Image.network(
-                                c.coverImage!,
+                                c.coverImage!.startsWith('http')
+                                    ? c.coverImage!
+                                    : "http://suhaib0000-001-site5.jtempurl.com/${c.coverImage!}",
                                 height: 180,
                                 width: double.infinity,
                                 fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Image.asset(
+                                      'assets/getstart.png',
+                                      height: 180,
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                    ),
                               )
                             : Image.asset(
                                 'assets/getstart.png',

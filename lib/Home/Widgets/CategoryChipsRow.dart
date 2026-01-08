@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:taskcsc/services/course_service.dart';
 
 class CategoryChipsRow extends StatefulWidget {
   const CategoryChipsRow({super.key});
@@ -9,14 +10,45 @@ class CategoryChipsRow extends StatefulWidget {
 
 class _CategoryChipsRowState extends State<CategoryChipsRow> {
   int selectedIndex = 0;
+  List<String> categories = ['All']; // Default category
+  bool isLoading = true;
 
-  final List<String> categories = ['UI & UX', 'Animation', 'Graphic Design'];
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    try {
+      final fetchedCategories = await CourseService.fetchCategories();
+      if (mounted) {
+        setState(() {
+          categories = ['All', ...fetchedCategories];
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint("❌ Error fetching categories: $e");
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return const SizedBox(
+        height: 40,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return SizedBox(
       height: 40,
-
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: categories.length,

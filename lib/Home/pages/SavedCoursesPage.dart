@@ -88,7 +88,9 @@ class _SavedCoursesPageState extends State<SavedCoursesPage> {
                           top: Radius.circular(16),
                         ),
                         child: Image.network(
-                          course.coverImage ?? '',
+                          (course.coverImage != null && course.coverImage!.startsWith('http'))
+                              ? course.coverImage!
+                              : "http://suhaib0000-001-site5.jtempurl.com/${course.coverImage ?? ''}",
                           width: double.infinity,
                           height: 180,
                           fit: BoxFit.cover,
