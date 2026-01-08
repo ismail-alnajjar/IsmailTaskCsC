@@ -7,7 +7,7 @@ import 'package:taskcsc/model/course_model.dart';
 class CourseService {
   // ✅ غيّر الـ IP حسب شبكتك المحلية
   static const String baseUrl =
-      "http://suhaib0000-001-site5.jtempurl.com/";
+      "https://suhaib0000-001-site1.jtempurl.com/api/";
 
   /// 🟢 جلب جميع الكورسات
   static Future<List<Course>> fetchCourses() async {

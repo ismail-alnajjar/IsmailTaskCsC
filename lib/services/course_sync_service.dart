@@ -10,7 +10,7 @@ class CourseSyncService {
 
   /// 🟢 1️⃣ جلب الكورسات من API
   static Future<List<Course>> fetchCoursesFromApi() async {
-    final uri = Uri.parse(apiBaseUrl);
+    final uri = Uri.parse("${apiBaseUrl}CoursesApi");
     final res = await http.get(uri).timeout(const Duration(seconds: 15));
 
     if (res.statusCode != 200) {

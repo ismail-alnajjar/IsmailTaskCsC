@@ -68,16 +68,20 @@ class _FloatingMenuButtonState extends State<FloatingMenuButton>
                     ),
                   ),
 
-                  /// 🔹 الأزرار الصغيرة
+                  /// 🔹 الأزرار الصغيرة — 🎯 تم إصلاحها باستخدام Positioned
                   ...List.generate(icons.length, (index) {
                     final startAngle = -pi / 2000;
                     final endAngle = pi / 1;
                     final step = (endAngle - startAngle) / (icons.length - 1);
                     final angle = startAngle + (index * step);
-                    final radius = 78 * _controller.value;
+                    final radius = 85 * _controller.value;
 
-                    return Transform.translate(
-                      offset: Offset(radius * cos(angle), -radius * sin(angle)),
+                    final dx = radius * cos(angle);
+                    final dy = -radius * sin(angle);
+
+                    return Positioned(
+                      left: 142 + dx,
+                      top: 100 + dy,
                       child: Opacity(
                         opacity: menu.isOpen ? _controller.value : 0,
                         child: AnimatedContainer(
@@ -109,7 +113,6 @@ class _FloatingMenuButtonState extends State<FloatingMenuButton>
                               setState(() {
                                 menu.selectIndex(index);
 
-                                // 🔥 كل أيقونة تستدعي الكلاس الخاص فيها
                                 switch (index) {
                                   case 0:
                                     HomeAction(context).execute();

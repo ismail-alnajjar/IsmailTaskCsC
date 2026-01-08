@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:taskcsc/log%20&%20sign/Login/forgetPass.dart';
 import 'package:taskcsc/provider/login_provider.dart';
 
 class RememberAndForgotRow extends StatelessWidget {
@@ -29,7 +30,12 @@ class RememberAndForgotRow extends StatelessWidget {
             ),
             TextButton(
               onPressed: () {
-                // TODO: Forgot password action
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ForgotPasswordPage(),
+                  ),
+                );
               },
               child: const Text(
                 'Forgot Password?',

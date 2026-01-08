@@ -13,13 +13,23 @@ class PopularCoursesSection extends StatefulWidget {
 
 class _PopularCoursesSectionState extends State<PopularCoursesSection> {
   List<Course> courses = [];
+  Set<String> savedIds = {}; // ⭐ لمعرفة المحفوظ مسبقاً
   bool isLoading = true;
   String? errorMessage;
+
+  /// ⭐ ترتيب رابط الصورة (Emulator)
+  String fixImageUrl(String? path) {
+    if (path == null || path.isEmpty) return "";
+    if (path.startsWith("http")) return path;
+
+    return "http://10.0.2.2:7295/$path";
+  }
 
   @override
   void initState() {
     super.initState();
     _loadCourses();
+    _loadSavedCourses();
   }
 
   /// 🟢 تحميل الكورسات الشائعة من API
@@ -39,69 +49,71 @@ class _PopularCoursesSectionState extends State<PopularCoursesSection> {
         isLoading = false;
       });
     } catch (e) {
-      if (!mounted) return;
       setState(() {
-        isLoading = false;
         errorMessage = e.toString();
+        isLoading = false;
       });
     }
   }
 
-  /// 🔖 حفظ / إزالة الكورس من SavedCourses
+  /// ⭐ جلب قائمة المحفوظات
+  Future<void> _loadSavedCourses() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final snap = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('savedCourses')
+        .get();
+
+    setState(() {
+      savedIds = snap.docs.map((e) => e.id).toSet();
+    });
+  }
+
+  /// ⭐ حفظ / إزالة من Saved + تغيير الأيقونة لحظياً
   Future<void> _toggleSaveCourse(Course course) async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("⚠️ Please log in first.")));
-      return;
-    }
+    if (user == null) return;
+
+    final id = course.id.toString();
 
     final ref = FirebaseFirestore.instance
         .collection('users')
         .doc(user.uid)
         .collection('savedCourses')
-        .doc(course.id?.toString() ?? course.title);
+        .doc(id);
 
-    final doc = await ref.get();
-
-    if (doc.exists) {
+    if (savedIds.contains(id)) {
+      // 🔴 إزالة
       await ref.delete();
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("❌ Removed from saved courses.")),
-      );
+      setState(() {
+        savedIds.remove(id);
+      });
     } else {
+      // 🟢 حفظ
       await ref.set({
         ...course.toJson(),
         'savedAt': FieldValue.serverTimestamp(),
       });
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("✅ Course saved successfully!")),
-      );
+
+      setState(() {
+        savedIds.add(id);
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (errorMessage != null) {
+    if (isLoading) return const Center(child: CircularProgressIndicator());
+    if (errorMessage != null)
       return Center(child: Text("Error: $errorMessage"));
-    }
-
-    if (courses.isEmpty) {
-      return const Center(child: Text("No popular courses found."));
-    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 🔹 العنوان
+        // 🔹 العنوان + See All
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -111,7 +123,7 @@ class _PopularCoursesSectionState extends State<PopularCoursesSection> {
             ),
             GestureDetector(
               onTap: () {
-                Navigator.pushNamed(context, '/CoursesPage');
+                Navigator.pushNamed(context, '/PopularSeeAll');
               },
               child: const Text(
                 'See All',
@@ -123,6 +135,7 @@ class _PopularCoursesSectionState extends State<PopularCoursesSection> {
             ),
           ],
         ),
+
         const SizedBox(height: 15),
 
         // 🔹 عرض الكورسات
@@ -130,10 +143,11 @@ class _PopularCoursesSectionState extends State<PopularCoursesSection> {
           height: 250,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            reverse: true,
             itemCount: courses.length,
             itemBuilder: (context, index) {
               final c = courses[index];
+              final isSaved = savedIds.contains(c.id.toString());
+
               return GestureDetector(
                 onTap: () {
                   Navigator.pushNamed(context, '/DiscPay', arguments: c);
@@ -142,7 +156,6 @@ class _PopularCoursesSectionState extends State<PopularCoursesSection> {
                   width: 200,
                   margin: const EdgeInsets.only(right: 18),
                   child: Stack(
-                    clipBehavior: Clip.none,
                     children: [
                       // الصورة
                       ClipRRect(
@@ -198,28 +211,26 @@ class _PopularCoursesSectionState extends State<PopularCoursesSection> {
                         ),
                       ),
 
-                      // أيقونة الحفظ
+                      // زر الحفظ ⭐
                       Positioned(
                         bottom: 80,
                         right: 10,
-                        child: Container(
-                          height: 50,
-                          width: 50,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 8,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: IconButton(
-                            icon: const Icon(Icons.bookmark_border),
-                            color: const Color(0xFF258A95),
-                            onPressed: () => _toggleSaveCourse(c),
+                        child: GestureDetector(
+                          onTap: () => _toggleSaveCourse(c),
+                          child: Container(
+                            height: 50,
+                            width: 50,
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              isSaved
+                                  ? Icons
+                                        .bookmark // ⭐ محفوظ
+                                  : Icons.bookmark_border, // ⭐ غير محفوظ
+                              color: const Color(0xFF258A95),
+                            ),
                           ),
                         ),
                       ),
@@ -227,10 +238,8 @@ class _PopularCoursesSectionState extends State<PopularCoursesSection> {
                       // النصوص
                       Positioned(
                         bottom: 0,
-                        left: 8,
-                        right: 8,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: SizedBox(
+                          width: 200,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -239,12 +248,11 @@ class _PopularCoursesSectionState extends State<PopularCoursesSection> {
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w700,
                                   fontSize: 16,
-                                  color: Colors.black,
                                 ),
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                "By: ${c.teacherName ?? "Unknown"}",
+                                "By: ${c.teacherName}",
                                 style: const TextStyle(
                                   color: Color(0xFF258A95),
                                   fontSize: 13,

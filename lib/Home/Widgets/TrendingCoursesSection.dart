@@ -1,6 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class TrendingCoursesSection extends StatelessWidget {
+class TrendingCoursesSection extends StatefulWidget {
   final List<Map<String, dynamic>> courses;
   final void Function(Map<String, dynamic> course)? onCourseTap;
 
@@ -11,7 +13,60 @@ class TrendingCoursesSection extends StatelessWidget {
   });
 
   @override
+  State<TrendingCoursesSection> createState() => _TrendingCoursesSectionState();
+}
+
+class _TrendingCoursesSectionState extends State<TrendingCoursesSection> {
+  Set<String> savedIds = {}; // ⭐ لمعرفة الكورسات المحفوظة
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSaved();
+  }
+
+  /// ⭐ تحميل الكورسات المحفوظة من Firestore
+  Future<void> _loadSaved() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final snap = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('savedCourses')
+        .get();
+
+    setState(() {
+      savedIds = snap.docs.map((e) => e.id).toSet();
+    });
+  }
+
+  /// ⭐ حفظ / إزالة الكورس
+  Future<void> _toggleSave(Map<String, dynamic> course) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final id = course['id'].toString();
+
+    final ref = FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('savedCourses')
+        .doc(id);
+
+    if (savedIds.contains(id)) {
+      await ref.delete();
+      setState(() => savedIds.remove(id));
+    } else {
+      await ref.set({...course, 'savedAt': FieldValue.serverTimestamp()});
+      setState(() => savedIds.add(id));
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final courses = widget.courses;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -37,26 +92,31 @@ class TrendingCoursesSection extends StatelessWidget {
         ),
         const SizedBox(height: 15),
 
-        // 🔹 تصميم الكروسات (نفس تصميم الـ Popular)
+        // 🔹 عرض الكورسات
         SizedBox(
           height: 250,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: courses.length,
             itemBuilder: (context, index) {
-              final course = courses[index];
+              final c = courses[index];
 
-              final title = course['title'] ?? 'No Title';
-              final author = course['author'] ?? 'Unknown';
-              final price = course['price']?.toString() ?? '0';
-              final imageUrl =
-                  course['coverImage'] ??
-                  course['coverImageUrl'] ??
-                  course['image'] ??
-                  "https://via.placeholder.com/400x250.png?text=No+Image";
+              final id = c['id'].toString();
+              final title = c['title'] ?? 'No Title';
+              final author = c['author'] ?? c['teacherName'] ?? 'Unknown';
+              final price = c['price']?.toString() ?? '0';
+              final img = c['coverImage'] ?? c['image'];
+
+              final imageUrl = img != null && img.toString().isNotEmpty
+                  ? (img.toString().startsWith("http")
+                        ? img
+                        : "http://10.0.2.2:7295/$img")
+                  : "https://via.placeholder.com/400x250.png?text=No+Image";
+
+              final isSaved = savedIds.contains(id);
 
               return GestureDetector(
-                onTap: () => onCourseTap?.call(course),
+                onTap: () => widget.onCourseTap?.call(c),
                 child: Container(
                   width: 200,
                   margin: const EdgeInsets.only(right: 18),
@@ -67,23 +127,20 @@ class TrendingCoursesSection extends StatelessWidget {
                       ClipRRect(
                         borderRadius: BorderRadius.circular(20),
                         child: Image.network(
-                          imageUrl.startsWith('http')
-                              ? imageUrl
-                              : "http://suhaib0000-001-site5.jtempurl.com/$imageUrl",
+                          imageUrl,
                           height: 180,
                           width: double.infinity,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              Image.network(
-                                "https://via.placeholder.com/400x250.png?text=No+Image",
-                                height: 180,
-                                width: double.infinity,
-                                fit: BoxFit.cover,
-                              ),
+                          errorBuilder: (_, __, ___) => Image.network(
+                            "https://via.placeholder.com/400x250.png?text=No+Image",
+                            height: 180,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
 
-                      // 🔹 السعر فوق الصورة
+                      // 🔹 السعر
                       Positioned(
                         top: 12,
                         left: 12,
@@ -107,64 +164,65 @@ class TrendingCoursesSection extends StatelessWidget {
                         ),
                       ),
 
-                      // 🔹 أيقونة الحفظ
+                      // 🔹 أيقونة الحفظ (مثل Popular)
                       Positioned(
                         bottom: 80,
                         right: 10,
-                        child: Container(
-                          height: 50,
-                          width: 50,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 8,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: IconButton(
-                            icon: const Icon(Icons.bookmark_border),
-                            color: const Color(0xFF258A95),
-                            onPressed: () {
-                              // TODO: حفظ في المفضلة
-                            },
+                        child: GestureDetector(
+                          onTap: () => _toggleSave(c),
+                          child: Container(
+                            height: 50,
+                            width: 50,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Icon(
+                              isSaved
+                                  ? Icons
+                                        .bookmark // ⭐ غامقة إذا محفوظ
+                                  : Icons
+                                        .bookmark_border, // ⭐ مفتوحة إذا غير محفوظ
+                              color: const Color(0xFF258A95),
+                            ),
                           ),
                         ),
                       ),
 
-                      // 🔹 النصوص تحت الصورة
+                      // 🔹 النصوص
                       Positioned(
                         bottom: 0,
                         left: 8,
                         right: 8,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                title,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 16,
-                                  color: Colors.black,
-                                ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 16,
+                                color: Colors.black,
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'By: $author',
-                                style: const TextStyle(
-                                  color: Color(0xFF258A95),
-                                  fontSize: 13,
-                                ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "By: $author",
+                              style: const TextStyle(
+                                color: Color(0xFF258A95),
+                                fontSize: 13,
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
                     ],

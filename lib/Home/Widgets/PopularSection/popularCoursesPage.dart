@@ -16,13 +16,26 @@ class _PopularSeeAllPageState extends State<PopularSeeAllPage> {
 
   final TextEditingController _searchController = TextEditingController();
 
+  /// ⭐ إصلاح رابط الصورة لجميع الواجهات (Emulator + Real Device)
+  String fixImageUrl(String? path) {
+    if (path == null || path.isEmpty) return "";
+
+    // إذا كان الرابط أصلاً كامل
+    if (path.startsWith("http://") || path.startsWith("https://")) {
+      return path;
+    }
+
+    // رابط API المحلي داخل Emulator
+    return "http://10.0.2.2:7295/$path";
+  }
+
   @override
   void initState() {
     super.initState();
     loadCourses();
   }
 
-  /// 🟢 تحميل الكورسات (الكل أو البحث)
+  /// 🟢 تحميل الكورسات (الكل/البحث)
   Future<void> loadCourses([String? query]) async {
     try {
       setState(() {
@@ -30,9 +43,15 @@ class _PopularSeeAllPageState extends State<PopularSeeAllPage> {
         errorMessage = null;
       });
 
-      final data = (query == null || query.isEmpty)
+      List<Course> data = (query == null || query.isEmpty)
           ? await CourseService.fetchCourses()
           : await CourseService.searchCourses(query);
+
+      // ⭐ إصلاح روابط الصور القادمة من الـ API
+      data = data.map((c) {
+        c.coverImage = fixImageUrl(c.coverImage);
+        return c;
+      }).toList();
 
       if (!mounted) return;
       setState(() {
@@ -42,10 +61,9 @@ class _PopularSeeAllPageState extends State<PopularSeeAllPage> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        isLoading = false;
         errorMessage = e.toString();
+        isLoading = false;
       });
-      debugPrint("❌ Error loading courses: $e");
     }
   }
 
@@ -68,9 +86,10 @@ class _PopularSeeAllPageState extends State<PopularSeeAllPage> {
               borderSide: BorderSide.none,
             ),
           ),
-          onSubmitted: (value) => loadCourses(value),
+          onSubmitted: loadCourses,
         ),
       ),
+
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
@@ -78,8 +97,11 @@ class _PopularSeeAllPageState extends State<PopularSeeAllPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: isLoading
+                child:
+                    // 🔄 تحميل
+                    isLoading
                     ? const Center(child: CircularProgressIndicator())
+                    // 🔥 خطأ
                     : errorMessage != null
                     ? Center(
                         child: Column(
@@ -119,6 +141,7 @@ class _PopularSeeAllPageState extends State<PopularSeeAllPage> {
                           ],
                         ),
                       )
+                    // 🚫 لا يوجد كورسات
                     : courses.isEmpty
                     ? const Center(
                         child: Text(
@@ -126,6 +149,7 @@ class _PopularSeeAllPageState extends State<PopularSeeAllPage> {
                           style: TextStyle(fontSize: 16, color: Colors.black54),
                         ),
                       )
+                    // ⭐ عرض كل الكورسات
                     : ListView.builder(
                         physics: const BouncingScrollPhysics(),
                         itemCount: courses.length,
@@ -149,101 +173,32 @@ class _PopularSeeAllPageState extends State<PopularSeeAllPage> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // 🔹 الصورة
+                                  // ⭐ الصورة
                                   SizedBox(
                                     height: 220,
-                                    child: Stack(
-                                      children: [
-                                        ClipRRect(
-                                          borderRadius:
-                                              const BorderRadius.vertical(
-                                                top: Radius.circular(20),
-                                                bottom: Radius.circular(20),
-                                              ),
-                                          child:
-                                              c.coverImage != null &&
-                                                  c.coverImage!.isNotEmpty
-                                              ? Image.network(
-                                                  c.coverImage!.startsWith('http')
-                                                      ? c.coverImage!
-                                                      : "http://suhaib0000-001-site5.jtempurl.com/${c.coverImage!}",
-                                                  width: double.infinity,
-                                                  height: double.infinity,
-                                                  fit: BoxFit.cover,
-                                                  errorBuilder: (context, error, stackTrace) =>
-                                                      Image.asset(
-                                                        "assets/MyCorses.png",
-                                                        width: double.infinity,
-                                                        height: double.infinity,
-                                                        fit: BoxFit.cover,
-                                                      ),
-                                                )
-                                              : Image.asset(
-                                                  "assets/MyCorses.png",
-                                                  width: double.infinity,
-                                                  height: double.infinity,
-                                                  fit: BoxFit.cover,
-                                                ),
-                                        ),
-                                        // 🔹 السعر
-                                        Positioned(
-                                          top: 12,
-                                          left: 12,
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 10,
-                                              vertical: 6,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              borderRadius:
-                                                  BorderRadius.circular(16),
-                                            ),
-                                            child: Text(
-                                              c.price != null
-                                                  ? "\$${c.price!.toStringAsFixed(0)}"
-                                                  : "Free",
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 14,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        // 🔹 أيقونة الحفظ
-                                        Positioned(
-                                          top: 12,
-                                          right: 12,
-                                          child: Container(
-                                            height: 45,
-                                            width: 45,
-                                            decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              shape: BoxShape.circle,
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.black
-                                                      .withOpacity(0.1),
-                                                  blurRadius: 8,
-                                                  offset: const Offset(0, 4),
-                                                ),
-                                              ],
-                                            ),
-                                            child: IconButton(
-                                              icon: const Icon(
-                                                Icons.bookmark_border,
-                                              ),
-                                              color: const Color(0xFF007C83),
-                                              onPressed: () {},
-                                            ),
-                                          ),
-                                        ),
-                                      ],
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(20),
+                                      child: Image.network(
+                                        fixImageUrl(c.coverImage),
+                                        width: double.infinity,
+                                        height: double.infinity,
+                                        fit: BoxFit.cover,
+
+                                        // 🔥 منع الكراش + صورة بديلة
+                                        errorBuilder:
+                                            (context, error, stackTrace) {
+                                              return Image.asset(
+                                                "assets/MyCorses.png",
+                                                fit: BoxFit.cover,
+                                                width: double.infinity,
+                                                height: double.infinity,
+                                              );
+                                            },
+                                      ),
                                     ),
                                   ),
 
-                                  // 🔹 النصوص
+                                  // ⭐ النصوص
                                   Padding(
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 16,
@@ -263,7 +218,7 @@ class _PopularSeeAllPageState extends State<PopularSeeAllPage> {
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          'By: ${c.teacherName ?? "Unknown"}',
+                                          "By: ${c.teacherName ?? "Unknown"}",
                                           style: const TextStyle(
                                             color: Color(0xFF258A95),
                                             fontSize: 13,

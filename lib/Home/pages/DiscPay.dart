@@ -3,28 +3,37 @@ import 'package:taskcsc/Home/pages/PayPage.dart';
 import 'package:taskcsc/model/course_model.dart';
 
 class DiscPay extends StatelessWidget {
-  final Course course; // ✅ استقبال بيانات الكورس مباشرة
+  final Course course;
 
   const DiscPay({super.key, required this.course});
+
+  /// ⭐ إصلاح رابط الصورة
+  String fixImageUrl(String? url) {
+    if (url == null || url.isEmpty) return "";
+    if (url.startsWith("http")) return url;
+    return "http://10.0.2.2:7295/$url"; // Emulator fix
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF9F6F7),
+
       appBar: AppBar(
         backgroundColor: const Color(0xFFF9F6F7),
         elevation: 0,
         centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.black87),
         title: const Text(
-          'Course Details',
+          "Course Details",
           style: TextStyle(
             color: Colors.black87,
             fontWeight: FontWeight.w600,
             fontSize: 20,
           ),
         ),
-        iconTheme: const IconThemeData(color: Colors.black87),
       ),
+
       body: SafeArea(
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
@@ -44,21 +53,32 @@ class DiscPay extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 🖼️ صورة الكورس
+                // ---------------- COVER IMAGE ----------------
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(24),
                   ),
-                  child: _buildCoverImage(),
+                  child: Image.network(
+                    fixImageUrl(course.coverImage),
+                    width: double.infinity,
+                    height: 230,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Image.asset(
+                      'assets/getstart.png',
+                      width: double.infinity,
+                      height: 230,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ),
 
-                // 🧾 التفاصيل
+                // ---------------- DETAILS ----------------
                 Padding(
                   padding: const EdgeInsets.all(18),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // 🔹 السعر
+                      // ---------- PRICE ----------
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -82,6 +102,7 @@ class DiscPay extends StatelessWidget {
                               ),
                             ),
                           ),
+
                           IconButton(
                             icon: const Icon(Icons.bookmark_border_rounded),
                             color: const Color(0xFF007C83),
@@ -95,9 +116,10 @@ class DiscPay extends StatelessWidget {
                           ),
                         ],
                       ),
+
                       const SizedBox(height: 10),
 
-                      // 🔹 العنوان
+                      // ---------- TITLE ----------
                       Text(
                         course.title,
                         style: const TextStyle(
@@ -107,9 +129,10 @@ class DiscPay extends StatelessWidget {
                           height: 1.2,
                         ),
                       ),
+
                       const SizedBox(height: 6),
 
-                      // 🔹 اسم المدرّس
+                      // ---------- TEACHER ----------
                       Row(
                         children: [
                           const Icon(
@@ -128,22 +151,24 @@ class DiscPay extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 20),
 
-                      // 🔹 الوصف
+                      const SizedBox(height: 25),
+
+                      // ---------- DESCRIPTION ----------
                       Text(
-                        course.description?.trim().isNotEmpty == true
+                        (course.description ?? "").trim().isNotEmpty
                             ? course.description!
-                            : 'No description available for this course.',
+                            : "No description available for this course.",
                         style: const TextStyle(
                           color: Colors.black54,
                           fontSize: 15,
                           height: 1.6,
                         ),
                       ),
+
                       const SizedBox(height: 35),
 
-                      // 🔹 زر الشراء
+                      // ---------- BUY BUTTON ----------
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
@@ -166,7 +191,7 @@ class DiscPay extends StatelessWidget {
                             );
                           },
                           child: const Text(
-                            'Buy Now',
+                            "Buy Now",
                             style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w600,
@@ -175,6 +200,8 @@ class DiscPay extends StatelessWidget {
                           ),
                         ),
                       ),
+
+                      const SizedBox(height: 10),
                     ],
                   ),
                 ),
@@ -183,50 +210,6 @@ class DiscPay extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  /// 🧩 دالة بناء صورة الغلاف
-  Widget _buildCoverImage() {
-    if (course.coverImage != null && course.coverImage!.isNotEmpty) {
-      String finalImage = course.coverImage!;
-      
-      // 1. استبدال الدومين القديم
-      if (finalImage.contains("suhaib0000-001-site1.jtempurl.com")) {
-        finalImage = finalImage.replaceAll(
-          "suhaib0000-001-site1.jtempurl.com",
-          "suhaib0000-001-site5.jtempurl.com",
-        );
-      }
-
-      // 2. معالجة المسارات النسبية
-      if (!finalImage.startsWith('http')) {
-        if (finalImage.startsWith('/')) {
-          finalImage = "http://suhaib0000-001-site5.jtempurl.com$finalImage";
-        } else {
-          finalImage = "http://suhaib0000-001-site5.jtempurl.com/$finalImage";
-        }
-      }
-
-      return Image.network(
-        finalImage,
-        width: double.infinity,
-        height: 230,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => _fallbackImage(),
-      );
-    } else {
-      return _fallbackImage();
-    }
-  }
-
-  /// 🖼️ صورة بديلة
-  Widget _fallbackImage() {
-    return Image.asset(
-      'assets/getstart.png',
-      width: double.infinity,
-      height: 230,
-      fit: BoxFit.cover,
     );
   }
 }
