@@ -83,7 +83,7 @@ class _SavedCoursesPageState extends State<SavedCoursesPage> {
                   (course.coverImage != null && course.coverImage!.isNotEmpty)
                   ? (course.coverImage!.startsWith("http")
                         ? course.coverImage!
-                        : "http://10.0.2.2:7295/${course.coverImage!}")
+                        : "https://taskcsc1-4.onrender.com/${course.coverImage!}")
                   : "";
 
               return Container(

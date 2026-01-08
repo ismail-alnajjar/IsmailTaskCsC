@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:taskcsc/model/course_model.dart';
-import 'package:taskcsc/services/course_service.dart';
+
 
 class PopularCoursesSection extends StatefulWidget {
   const PopularCoursesSection({super.key});
@@ -22,7 +22,7 @@ class _PopularCoursesSectionState extends State<PopularCoursesSection> {
     if (path == null || path.isEmpty) return "";
     if (path.startsWith("http")) return path;
 
-    return "http://10.0.2.2:7295/$path";
+    return "https://taskcsc1-4.onrender.com/$path";
   }
 
   @override
@@ -32,7 +32,7 @@ class _PopularCoursesSectionState extends State<PopularCoursesSection> {
     _loadSavedCourses();
   }
 
-  /// 🟢 تحميل الكورسات الشائعة من API
+  /// 🟢 تحميل الكورسات (Popular) من Firebase
   Future<void> _loadCourses() async {
     try {
       if (!mounted) return;
@@ -40,8 +40,14 @@ class _PopularCoursesSectionState extends State<PopularCoursesSection> {
         isLoading = true;
       });
 
-      // 🔹 استخدام الـ Service بدل Firestore
-      final data = await CourseService.fetchPopularCourses();
+      // 🔹 جلب البيانات من collection 'courses'
+      // يمكنك إضافة .orderBy('studentsCount', descending: true) لو عندك حقل للشعبية
+      final snapshot = await FirebaseFirestore.instance
+          .collection('courses')
+          .limit(10) // مجرد مثال لجلب عدد محدود
+          .get();
+
+      final data = snapshot.docs.map((doc) => Course.fromJson(doc.data())).toList();
 
       if (!mounted) return;
       setState(() {
@@ -49,6 +55,7 @@ class _PopularCoursesSectionState extends State<PopularCoursesSection> {
         isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         errorMessage = e.toString();
         isLoading = false;
@@ -165,7 +172,7 @@ class _PopularCoursesSectionState extends State<PopularCoursesSection> {
                             ? Image.network(
                                 c.coverImage!.startsWith('http')
                                     ? c.coverImage!
-                                    : "http://suhaib0000-001-site5.jtempurl.com/${c.coverImage!}",
+                                    : "https://taskcsc1-4.onrender.com/${c.coverImage!}",
                                 height: 180,
                                 width: double.infinity,
                                 fit: BoxFit.cover,

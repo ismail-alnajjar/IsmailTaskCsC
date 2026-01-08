@@ -5,8 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:taskcsc/model/course_model.dart';
 
 class CourseSyncService {
-  static const String apiBaseUrl =
-      "http://suhaib0000-001-site5.jtempurl.com/";
+  static const String apiBaseUrl = "https://taskcsc1-4.onrender.com/api/";
 
   /// 🟢 1️⃣ جلب الكورسات من API
   static Future<List<Course>> fetchCoursesFromApi() async {

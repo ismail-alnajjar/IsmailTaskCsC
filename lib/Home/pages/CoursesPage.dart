@@ -166,7 +166,7 @@ class _CoursesPageState extends State<CoursesPage> {
                                               ? Image.network(
                                                   c.coverImage!.startsWith('http')
                                                       ? c.coverImage!
-                                                      : "http://suhaib0000-001-site5.jtempurl.com/${c.coverImage!}",
+                                                      : "https://taskcsc1-4.onrender.com/${c.coverImage!}",
                                                   width: double.infinity,
                                                   height: double.infinity,
                                                   fit: BoxFit.cover,

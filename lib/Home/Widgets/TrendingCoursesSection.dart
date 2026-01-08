@@ -110,8 +110,8 @@ class _TrendingCoursesSectionState extends State<TrendingCoursesSection> {
               final imageUrl = img != null && img.toString().isNotEmpty
                   ? (img.toString().startsWith("http")
                         ? img
-                        : "http://10.0.2.2:7295/$img")
-                  : "https://via.placeholder.com/400x250.png?text=No+Image";
+                        : "https://taskcsc1-4.onrender.com/$img")
+                  : "";
 
               final isSaved = savedIds.contains(id);
 
@@ -126,18 +126,25 @@ class _TrendingCoursesSectionState extends State<TrendingCoursesSection> {
                       // 🔹 الصورة
                       ClipRRect(
                         borderRadius: BorderRadius.circular(20),
-                        child: Image.network(
-                          imageUrl,
-                          height: 180,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Image.network(
-                            "https://via.placeholder.com/400x250.png?text=No+Image",
-                            height: 180,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
+                        child: imageUrl.isNotEmpty
+                            ? Image.network(
+                                imageUrl,
+                                height: 180,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => Image.asset(
+                                  "assets/getstart.png",
+                                  height: 180,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                            : Image.asset(
+                                "assets/getstart.png",
+                                height: 180,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                              ),
                       ),
 
                       // 🔹 السعر

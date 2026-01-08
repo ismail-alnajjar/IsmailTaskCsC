@@ -23,7 +23,7 @@ class CourseDetailPage extends StatelessWidget {
     if (url.startsWith("http")) return url;
 
     // لو الرابط جاي كـ "uploads/.."
-    return "http://10.0.2.2:7295/$url";
+    return "https://taskcsc1-4.onrender.com/$url";
   }
 
   @override
@@ -63,19 +63,16 @@ class CourseDetailPage extends StatelessWidget {
               builder: (context) {
                 String finalImage = coverImage;
                 if (finalImage.isNotEmpty) {
-                  if (finalImage.contains("suhaib0000-001-site1.jtempurl.com")) {
-                    finalImage = finalImage.replaceAll(
-                        "suhaib0000-001-site1.jtempurl.com",
-                        "suhaib0000-001-site5.jtempurl.com");
-                  }
                   if (!finalImage.startsWith('http')) {
                     if (finalImage.startsWith('/')) {
                       finalImage =
-                          "http://suhaib0000-001-site5.jtempurl.com$finalImage";
+                          "https://taskcsc1-4.onrender.com$finalImage";
                     } else {
                       finalImage =
-                          "http://suhaib0000-001-site5.jtempurl.com/$finalImage";
+                          "https://taskcsc1-4.onrender.com/$finalImage";
                     }
+                  } else if (finalImage.startsWith("http://taskcsc1-4.onrender.com")) {
+                     finalImage = finalImage.replaceFirst("http://", "https://");
                   }
                 }
 

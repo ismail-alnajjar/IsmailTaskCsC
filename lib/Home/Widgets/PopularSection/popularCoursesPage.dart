@@ -1,6 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:taskcsc/model/course_model.dart';
-import 'package:taskcsc/services/course_service.dart';
 
 class PopularSeeAllPage extends StatefulWidget {
   const PopularSeeAllPage({super.key});
@@ -26,7 +26,7 @@ class _PopularSeeAllPageState extends State<PopularSeeAllPage> {
     }
 
     // رابط API المحلي داخل Emulator
-    return "http://10.0.2.2:7295/$path";
+    return "https://taskcsc1-4.onrender.com/$path";
   }
 
   @override
@@ -35,7 +35,7 @@ class _PopularSeeAllPageState extends State<PopularSeeAllPage> {
     loadCourses();
   }
 
-  /// 🟢 تحميل الكورسات (الكل/البحث)
+  /// 🟢 تحميل الكورسات من Firebase
   Future<void> loadCourses([String? query]) async {
     try {
       setState(() {
@@ -43,14 +43,20 @@ class _PopularSeeAllPageState extends State<PopularSeeAllPage> {
         errorMessage = null;
       });
 
-      List<Course> data = (query == null || query.isEmpty)
-          ? await CourseService.fetchCourses()
-          : await CourseService.searchCourses(query);
+      Query<Map<String, dynamic>> queryRef =
+          FirebaseFirestore.instance.collection('courses');
 
-      // ⭐ إصلاح روابط الصور القادمة من الـ API
-      data = data.map((c) {
-        c.coverImage = fixImageUrl(c.coverImage);
-        return c;
+      // لو فيه بحث بسيط
+      if (query != null && query.isNotEmpty) {
+        // 🔥 بحث بدائي في الفايربيس (Case-sensitive)
+        queryRef = queryRef.where('title', isGreaterThanOrEqualTo: query)
+            .where('title', isLessThan: query + 'z');
+      }
+
+      final snapshot = await queryRef.get();
+
+      List<Course> data = snapshot.docs.map((doc) {
+        return Course.fromJson(doc.data());
       }).toList();
 
       if (!mounted) return;

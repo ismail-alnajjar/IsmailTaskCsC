@@ -11,7 +11,7 @@ class DiscPay extends StatelessWidget {
   String fixImageUrl(String? url) {
     if (url == null || url.isEmpty) return "";
     if (url.startsWith("http")) return url;
-    return "http://10.0.2.2:7295/$url"; // Emulator fix
+    return "https://taskcsc1-4.onrender.com/$url"; // Server fix
   }
 
   @override

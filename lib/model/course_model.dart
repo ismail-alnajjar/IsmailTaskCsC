@@ -54,23 +54,18 @@ class Course {
     if (course.coverImage != null) {
       String finalImage = course.coverImage!;
       
-      // 1. استبدال الدومين القديم بالجديد
-      if (finalImage.contains("suhaib0000-001-site1.jtempurl.com")) {
-        finalImage = finalImage.replaceAll(
-          "suhaib0000-001-site1.jtempurl.com",
-          "suhaib0000-001-site5.jtempurl.com",
-        );
-      }
-
       // 2. إذا كان الرابط لا يبدأ بـ http (أي مسار نسبي أو اسم ملف فقط)
       if (!finalImage.startsWith('http')) {
         // إذا كان يبدأ بـ /uploads/courses/ أو uploads/courses/
         if (finalImage.startsWith('/')) {
-            finalImage = "http://suhaib0000-001-site5.jtempurl.com$finalImage";
+            finalImage = "https://taskcsc1-4.onrender.com$finalImage";
         } else {
             // إذا كان اسم ملف فقط أو مسار نسبي بدون / في البداية
-            finalImage = "http://suhaib0000-001-site5.jtempurl.com/$finalImage";
+            finalImage = "https://taskcsc1-4.onrender.com/$finalImage";
         }
+      } else if (finalImage.startsWith("http://taskcsc1-4.onrender.com")) {
+          // Force HTTPS if it was replaced but kept http
+          finalImage = finalImage.replaceFirst("http://", "https://");
       }
 
       return Course(

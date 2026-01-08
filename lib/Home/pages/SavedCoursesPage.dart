@@ -90,7 +90,7 @@ class _SavedCoursesPageState extends State<SavedCoursesPage> {
                         child: Image.network(
                           (course.coverImage != null && course.coverImage!.startsWith('http'))
                               ? course.coverImage!
-                              : "http://suhaib0000-001-site5.jtempurl.com/${course.coverImage ?? ''}",
+                              : "https://taskcsc1-4.onrender.com/${course.coverImage ?? ''}",
                           width: double.infinity,
                           height: 180,
                           fit: BoxFit.cover,

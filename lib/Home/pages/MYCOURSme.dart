@@ -21,17 +21,7 @@ class _MyCoursesMeState extends State<MyCoursesMe> {
     if (path.isEmpty) return "";
     if (path.startsWith("http")) return path;
 
-    const port = 7295;
-
-    // ✔ لو Emulator
-    if (path.contains("uploads")) {
-      return "http://10.0.2.2:$port/$path";
-    }
-
-    // ✔ لو تلفون فعلي (عدّل IP مرة واحدة)
-    const String localIp = "192.168.1.10";
-
-    return "http://$localIp:$port/$path";
+    return "https://taskcsc1-4.onrender.com/$path";
   }
 
   @override
